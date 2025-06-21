@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎥 Indino Video Zone</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #fff8e1, #ffe0b2);
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: #ff6f00;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      font-size: 1.5em;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .video-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      overflow: hidden;
+      transition: transform 0.3s;
+      cursor: pointer;
+    }
+
+    .video-card:hover {
+      transform: scale(1.03);
+    }
+
+    .thumbnail {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+    }
+
+    .title {
+      padding: 10px;
+      font-weight: bold;
+      color: #e65100;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      position: relative;
+      background: white;
+      border-radius: 12px;
+      max-width: 800px;
+      width: 90%;
+      padding: 20px;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    iframe {
+      width: 100%;
+      height: 400px;
+      border: none;
+      border-radius: 10px;
+    }
+
+    #coin-status {
+      margin-top: 10px;
+      color: green;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <header>🎥 ઇન્ડિનો વિડિયો ઝોન - વિડિયો જોવો, કોઈન મેળવો</header>
+
+  <div class="gallery" id="videoList">
+    <!-- Dynamic Videos inserted here -->
+  </div>
+
+  <div class="modal" id="videoModal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeVideo()">&times;</span>
+      <iframe id="videoFrame" allowfullscreen></iframe>
+      <div id="coin-status">કોઈન મળ્યા: 0</div>
+    </div>
+  </div>
+
+  <script>
+    const videoList = document.getElementById('videoList');
+    const modal = document.getElementById('videoModal');
+    const frame = document.getElementById('videoFrame');
+    const coinStatus = document.getElementById('coin-status');
+
+    let coinCount = 0;
+    let lastMinute = 0;
+    let timer;
+
+    const videos = JSON.parse(localStorage.getItem('indino_videos') || '[]');
+
+    videos.forEach((v, index) => {
+      const card = document.createElement('div');
+      card.className = 'video-card';
+      card.innerHTML = `
+        <img src="https://img.youtube.com/vi/${extractYouTubeId(v.url)}/0.jpg" class="thumbnail">
+        <div class="title">${v.title}</div>
+      `;
+      card.onclick = () => openVideo(v.url);
+      videoList.appendChild(card);
+    });
+
+    function extractYouTubeId(url) {
+      const match = url.match(/(?:youtu\.be\/|v=)([a-zA-Z0-9_-]{11})/);
+      return match ? match[1] : '';
+    }
+
+    function openVideo(url) {
+      const videoId = extractYouTubeId(url);
+      frame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+      modal.style.display = 'flex';
+      coinCount = 0;
+      lastMinute = 0;
+      coinStatus.textContent = 'કોઈન મળ્યા: 0';
+
+      let elapsed = 0;
+      timer = setInterval(() => {
+        elapsed++;
+        if (elapsed % 60 === 0) {
+          coinCount++;
+          coinStatus.textContent = `કોઈન મળ્યા: ${coinCount}`;
+        }
+      }, 1000);
+    }
+
+    function closeVideo() {
+      modal.style.display = 'none';
+      frame.src = '';
+      clearInterval(timer);
+    }
+  </script>
+
+</body>
+</html>

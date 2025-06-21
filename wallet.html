@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>💰 Indino Wallet</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #e0f7fa, #f1f8e9);
+      color: #004d40;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 20px auto;
+      padding: 10px;
+    }
+
+    h2 {
+      text-align: center;
+      font-size: 2.2em;
+      color: #00695c;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: linear-gradient(to right, #80cbc4, #a5d6a7);
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .card h3 {
+      margin: 10px 0;
+      font-size: 1.3em;
+    }
+
+    .balance {
+      font-size: 2em;
+      font-weight: bold;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background: #00796b;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 1em;
+      margin: 5px;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.3s;
+    }
+
+    button:hover {
+      background: #004d40;
+      transform: scale(1.05);
+    }
+
+    #reward-btn {
+      display: none; /* Hidden initially */
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>💰 ઇન્ડિનો વૉલેટ</h2>
+
+    <div class="card">
+      <h3>📀 Coins for <span id="usernameDisplay"></span></h3>
+      <div class="balance" id="coin-balance">0</div>
+      
+        <button id="reward-btn" onclick="rewardAdWatched()">🎁 એડ જોઈ લીધું</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const username = localStorage.getItem("loggedInUser");
+    if (!username) 
+    
+
+    const coinKey = "coins_" + username;
+
+    function updateBalance() {
+      const coins = localStorage.getItem(coinKey) || "0";
+      document.getElementById("coin-balance").innerText = coins;
+      document.getElementById("usernameDisplay").innerText = username;
+    }
+
+    function addCoin() {
+      let current = parseInt(localStorage.getItem(coinKey) || "0");
+      current += 1;
+      localStorage.setItem(coinKey, current);
+      updateBalance();
+    }
+
+    function resetCoins() {
+      if (confirm("Reset all coins?")) {
+        localStorage.setItem(coinKey, "0");
+        updateBalance();
+      }
+    }
+
+    function rewardAdWatched() {
+      let current = parseInt(localStorage.getItem(coinKey) || "0");
+      current += 1;
+      localStorage.setItem(coinKey, current);
+      updateBalance();
+      document.getElementById("reward-btn").style.display = "none"; // Hide after reward
+      alert("👏 તમે એડ જોયા પછી 1 કોઈન મેળવ્યું!");
+    }
+
+    // Simulate ad finished (you can call this from game page too)
+    function showRewardButton() {
+      document.getElementById("reward-btn").style.display = "inline-block";
+    }
+
+    // OPTIONAL: Uncomment below line to simulate ad after 5 sec
+    // setTimeout(showRewardButton, 5000);
+
+    updateBalance();
+  </script>
+
+</body>
+</html>

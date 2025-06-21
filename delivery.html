@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>📦 Indino Delivery Panel</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f8e9;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #33691e;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    .login-section, .order-section {
+      padding: 20px;
+    }
+    input, button {
+      display: block;
+      margin: 10px auto;
+      padding: 10px;
+      width: 90%;
+      max-width: 400px;
+      font-size: 1em;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #558b2f;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #33691e;
+    }
+    .hidden {
+      display: none;
+    }
+    .order-box {
+      background: #ffffff;
+      border: 1px solid #aed581;
+      border-radius: 10px;
+      padding: 10px;
+      margin: 10px 0;
+    }
+    .delivered {
+      background-color: #dcedc8;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🚚 Indino Delivery Panel</h1>
+    <p>Order Complete Here</p>
+  </header>
+
+  <div class="login-section" id="loginBox">
+    <h3>🔐 ડિલિવરી બોય લોગિન</h3>
+    <input type="password" id="deliveryPassword" placeholder="પાસવર્ડ દાખલ કરો" />
+    <button onclick="login()">Login</button>
+    <p id="loginError" style="color:red; text-align:center;"></p>
+  </div>
+
+  <div class="order-section hidden" id="orderPanel">
+    <h2>📦 પેન્ડિંગ ઓર્ડર</h2>
+    <div id="deliveryOrders"></div>
+  </div>
+
+  <script>
+    function login() {
+      const pass = document.getElementById("deliveryPassword").value;
+      if (pass === "1481999") {
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("orderPanel").classList.remove("hidden");
+        loadOrders();
+      } else {
+        document.getElementById("loginError").innerText = "❌ ખોટો પાસવર્ડ!";
+      }
+    }
+
+    function loadOrders() {
+      const container = document.getElementById("deliveryOrders");
+      const orders = JSON.parse(localStorage.getItem("indino_orders") || "[]");
+      container.innerHTML = "";
+
+      if (orders.length === 0) {
+        container.innerHTML = "<p>📭 કોઈ ઓર્ડર ઉપલબ્ધ નથી.</p>";
+        return;
+      }
+
+      orders.forEach((order, index) => {
+        const box = document.createElement("div");
+        box.className = "order-box" + (order.delivered ? " delivered" : "");
+        box.innerHTML = `
+          <h4>📦 ઓર્ડર #${index + 1}</h4>
+          <p>🍔 ફૂડ: <strong>${order.food}</strong></p>
+          <p>👤 નામ: ${order.name}</p>
+          <p>📱 મોબાઈલ: ${order.mobile}</p>
+          <p>🏠 એડ્રેસ: ${order.village}, ${order.society}</p>
+          ${
+            order.delivered
+              ? "<p style='color:green;'>✅ ઓર્ડર ડિલિવર થઈ ગયું</p>"
+              : `<button onclick="markDelivered(${index})">✔️ ડિલિવર કર્યું</button>`
+          }
+        `;
+        container.appendChild(box);
+      });
+    }
+
+    function markDelivered(index) {
+      const orders = JSON.parse(localStorage.getItem("indino_orders") || "[]");
+      orders[index].delivered = true;
+      localStorage.setItem("indino_orders", JSON.stringify(orders));
+      loadOrders();
+    }
+  </script>
+</body>
+</html>

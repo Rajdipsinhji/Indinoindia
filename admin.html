@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8" />
+  <title>Indino Admin Panel</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #e3f2fd;
+      margin: 0;
+      padding: 0;
+    }
+    .hidden { display: none; }
+    header {
+      background: #1565c0;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    section { padding: 20px; }
+    input, textarea, button {
+      display: block;
+      margin: 10px auto;
+      padding: 10px;
+      width: 90%;
+      max-width: 400px;
+      font-size: 1em;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    button {
+      background: #1565c0;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .order-box {
+      background: #fff;
+      border: 1px solid #90caf9;
+      border-radius: 10px;
+      padding: 10px;
+      margin: 10px 0;
+    }
+    .delivered-label {
+      color: green;
+      font-weight: bold;
+    }
+    .delete-btn {
+      background: #d32f2f;
+      margin-top: 5px;
+    }
+    #popupNotify {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: #4caf50;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 1em;
+      display: none;
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="popupNotify">🔔 નવો ઓર્ડર મળ્યો!</div>
+  <audio id="orderSound" src="https://actions.google.com/sounds/v1/emergency/emergency_siren.ogg" preload="auto"></audio>
+
+  <div id="loginSection" style="text-align:center;padding:50px">
+    <h2>🔐 એડમિન લોગિન</h2>
+    <input type="password" id="adminPassword" placeholder="પાસવર્ડ દાખલ કરો">
+    <button onclick="checkPassword()">Login</button>
+    <p id="errorMsg" style="color:red;"></p>
+  </div>
+
+  <div id="adminPanel" class="hidden">
+    <header><h1>🎛️ Indino Admin Panel</h1></header>
+
+    <section>
+      <h2>🍲 ફૂડ ઉમેરો</h2>
+      <input id="foodName" placeholder="ફૂડ નામ">
+      <input id="foodPrice" placeholder="પ્રાઈસ ₹">
+      <input id="foodImage" placeholder="ઈમેજ URL">
+      <input id="foodCoins" placeholder="કોઈન્સ">
+      <button onclick="addFood()">➕ ઉમેરો</button>
+      <div id="foodList"></div>
+    </section>
+
+    <section>
+      <h2>🎬 વીડિયો ઉમેરો</h2>
+      <input id="videoTitle" placeholder="ટાઈટલ">
+      <input id="videoUrl" placeholder="YouTube URL">
+      <textarea id="videoDesc" placeholder="ડિસ્ક્રિપ્શન"></textarea>
+      <button onclick="addVideo()">📤 ઉમેરો</button>
+      <div id="videoList"></div>
+    </section>
+
+    <section>
+      <h2>📦 તમામ ઓર્ડર</h2>
+      <div id="orderList"></div>
+    </section>
+
+    <section>
+      <h2>👷 ડિલિવરી બોય ઉમેરો</h2>
+      <input id="boyName" placeholder="નામ">
+      <input id="boyMobile" placeholder="મોબાઇલ નંબર">
+      <button onclick="addDeliveryBoy()">➕ ઉમેરો</button>
+      <div id="boyList"></div>
+    </section>
+  </div>
+
+  <script>
+    let lastOrderCount = 0;
+
+    function checkPassword() {
+      const pass = document.getElementById("adminPassword").value;
+      if (pass === "1162003") {
+        document.getElementById("loginSection").style.display = "none";
+        document.getElementById("adminPanel").classList.remove("hidden");
+        loadFood(); loadVideos(); loadDeliveryBoys(); showOrders(true);
+        setInterval(() => showOrders(false), 4000);
+      } else {
+        document.getElementById("errorMsg").innerText = "❌ ખોટો પાસવર્ડ!";
+      }
+    }
+
+    function addFood() {
+      const name = foodName.value, price = foodPrice.value, image = foodImage.value, coins = foodCoins.value;
+      const list = JSON.parse(localStorage.getItem("indino_food") || "[]");
+      list.push({ name, price, image, coins });
+      localStorage.setItem("indino_food", JSON.stringify(list));
+      alert("✅ ઉમેરાયું!"); loadFood();
+    }
+
+    function loadFood() {
+      const list = JSON.parse(localStorage.getItem("indino_food") || "[]");
+      foodList.innerHTML = "";
+      list.forEach((f, i) => {
+        const d = document.createElement("div");
+        d.className = "order-box";
+        d.innerHTML = `<p>${f.name} - ₹${f.price} (${f.coins} coins)</p>
+                       <button class="delete-btn" onclick="deleteFood(${i})">❌ Delete</button>`;
+        foodList.appendChild(d);
+      });
+    }
+
+    function deleteFood(i) {
+      const list = JSON.parse(localStorage.getItem("indino_food") || "[]");
+      list.splice(i, 1);
+      localStorage.setItem("indino_food", JSON.stringify(list));
+      loadFood();
+    }
+
+    function addVideo() {
+      const title = videoTitle.value, url = videoUrl.value, desc = videoDesc.value;
+      const list = JSON.parse(localStorage.getItem("indino_videos") || "[]");
+      list.push({ title, url, desc });
+      localStorage.setItem("indino_videos", JSON.stringify(list));
+      alert("✅ ઉમેરાયો!"); loadVideos();
+    }
+
+    function loadVideos() {
+      const list = JSON.parse(localStorage.getItem("indino_videos") || "[]");
+      videoList.innerHTML = "";
+      list.forEach((v, i) => {
+        const d = document.createElement("div");
+        d.className = "order-box";
+        d.innerHTML = `<p>${v.title}</p>
+                       <button class="delete-btn" onclick="deleteVideo(${i})">❌ Delete</button>`;
+        videoList.appendChild(d);
+      });
+    }
+
+    function deleteVideo(i) {
+      const list = JSON.parse(localStorage.getItem("indino_videos") || "[]");
+      list.splice(i, 1);
+      localStorage.setItem("indino_videos", JSON.stringify(list));
+      loadVideos();
+    }
+
+    function showOrders(first = false) {
+      const list = JSON.parse(localStorage.getItem("indino_orders") || "[]");
+      orderList.innerHTML = "";
+      if (!first && list.length > lastOrderCount) {
+        document.getElementById("orderSound").play();
+        popupNotify.style.display = "block";
+        setTimeout(() => popupNotify.style.display = "none", 4000);
+      }
+      lastOrderCount = list.length;
+      list.forEach((o, i) => {
+        const d = document.createElement("div");
+        d.className = "order-box";
+        d.innerHTML = `<h4>📦 ઓર્ડર #${i + 1}</h4>
+          <p>🍔 ${o.food}</p>
+          <p>👤 ${o.name}</p>
+          <p>📱 ${o.mobile}</p>
+          <p>🏡 ${o.village}, ${o.society}</p>
+          ${o.delivered ? '<p class="delivered-label">✅ ડિલિવર થયું</p>' : ''}`;
+        orderList.appendChild(d);
+      });
+    }
+
+    function addDeliveryBoy() {
+      const name = boyName.value.trim(), mobile = boyMobile.value.trim();
+      if (!name || !mobile) {
+        alert("⚠️ બંને ફીલ્ડ જરૂરી છે."); return;
+      }
+      const list = JSON.parse(localStorage.getItem("indino_boys") || "[]");
+      list.push({ name, mobile });
+      localStorage.setItem("indino_boys", JSON.stringify(list));
+      alert("✅ બોય ઉમેરાયો!"); loadDeliveryBoys();
+    }
+
+    function loadDeliveryBoys() {
+      const list = JSON.parse(localStorage.getItem("indino_boys") || "[]");
+      boyList.innerHTML = "";
+      list.forEach((b, i) => {
+        const d = document.createElement("div");
+        d.className = "order-box";
+        d.innerHTML = `<p>👷 ${b.name} - 📱 ${b.mobile}</p>
+                       <button class="delete-btn" onclick="deleteDeliveryBoy(${i})">❌ ડિલીટ</button>`;
+        boyList.appendChild(d);
+      });
+    }
+
+    function deleteDeliveryBoy(i) {
+      const list = JSON.parse(localStorage.getItem("indino_boys") || "[]");
+      list.splice(i, 1);
+      localStorage.setItem("indino_boys", JSON.stringify(list));
+      loadDeliveryBoys();
+    }
+  </script>
+
+</body>
+</html>

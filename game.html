@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>🏎️ Car Racing</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #game {
+      position: relative;
+      width: 300px;
+      height: 500px;
+      background: #444;
+      border: 4px solid #888;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    #player {
+      position: absolute;
+      bottom: 20px;
+      width: 30px;
+      height: 50px;
+      background: red;
+      left: calc(50% - 15px);
+      border-radius: 5px;
+    }
+    .enemy {
+      position: absolute;
+      width: 30px;
+      height: 50px;
+      background: yellow;
+      top: -50px;
+      left: 100px;
+      border-radius: 5px;
+    }
+    .road-line {
+      position: absolute;
+      width: 4px;
+      height: 80px;
+      background: white;
+      left: calc(50% - 2px);
+    }
+    #score, #timer {
+      position: absolute;
+      background: rgba(0,0,0,0.5);
+      padding: 5px 10px;
+      font-size: 14px;
+      border-radius: 5px;
+    }
+    #score { top: 5px; left: 5px; }
+    #timer { top: 5px; right: 5px; }
+    #controls {
+      margin-top: 15px;
+      display: flex;
+      gap: 30px;
+    }
+    button {
+      background: #009688;
+      color: white;
+      padding: 10px 20px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:active {
+      background: #00796b;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="game">
+    <div id="player"></div>
+    <div id="score">સ્કોર: 0</div>
+    <div id="timer">સમય: 180s</div>
+  </div>
+
+  <div id="controls">
+    <button onclick="moveLeft()">⬅️ Left</button>
+    <button onclick="moveRight()">➡️ Right</button>
+  </div>
+
+  <script>
+    const game = document.getElementById("game");
+    const player = document.getElementById("player");
+    const scoreEl = document.getElementById("score");
+    const timerEl = document.getElementById("timer");
+
+    let playerX = 135;
+    let score = 0;
+    let timeLeft = 180;
+    let enemies = [], lines = [];
+    let coinGivenAt = [120, 60, 0];
+
+    function movePlayer() {
+      player.style.left = playerX + "px";
+    }
+
+    function moveLeft() {
+      if (playerX > 0) {
+        playerX -= 15;
+        movePlayer();
+      }
+    }
+
+    function moveRight() {
+      if (playerX < 270) {
+        playerX += 15;
+        movePlayer();
+      }
+    }
+
+    function spawnEnemy() {
+      const e = document.createElement("div");
+      e.classList.add("enemy");
+      e.style.left = Math.floor(Math.random() * 270) + "px";
+      game.appendChild(e);
+      enemies.push(e);
+    }
+
+    function collision(a, b) {
+      const r1 = a.getBoundingClientRect();
+      const r2 = b.getBoundingClientRect();
+      return !(r2.left > r1.right || r2.right < r1.left || r2.top > r1.bottom || r2.bottom < r1.top);
+    }
+
+    function moveEnemies() {
+      enemies.forEach((e, i) => {
+        let top = parseFloat(e.style.top || "-50");
+        top += 4;
+        e.style.top = top + "px";
+
+        if (collision(e, player)) {
+          alert("💥 Game Over! તમારું સ્કોર: " + score);
+          location.reload();
+        }
+
+        if (top > 500) {
+          game.removeChild(e);
+          enemies.splice(i, 1);
+          score += 10;
+          scoreEl.innerText = "સ્કોર: " + score;
+        }
+      });
+    }
+
+    function startTimer() {
+      const timerInterval = setInterval(() => {
+        timeLeft--;
+        timerEl.innerText = "સમય: " + timeLeft + "s";
+
+        if (coinGivenAt.includes(timeLeft)) {
+          let coins = parseInt(localStorage.getItem("coins") || "0");
+          localStorage.setItem("coins", coins + 1);
+        }
+
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          alert("🎉 3 મિનિટ પૂર્ણ! તમારું સ્કોર: " + score + "\n+3 Coin મળ્યા.");
+          window.location.href = "wallet.html";
+        }
+      }, 1000);
+    }
+
+    function gameLoop() {
+      moveEnemies();
+      requestAnimationFrame(gameLoop);
+    }
+
+    function initLines() {
+      for (let i = 0; i < 10; i++) {
+        const line = document.createElement("div");
+        line.classList.add("road-line");
+        line.style.top = i * 60 + "px";
+        game.appendChild(line);
+        lines.push(line);
+      }
+    }
+
+    function moveLines() {
+      lines.forEach(l => {
+        let y = parseFloat(l.style.top);
+        y += 4;
+        if (y > 500) y = -80;
+        l.style.top = y + "px";
+      });
+    }
+
+    setInterval(spawnEnemy, 1000);
+    setInterval(moveLines, 30);
+    startTimer();
+    requestAnimationFrame(gameLoop);
+    initLines();
+  </script>
+</body>
+</html>

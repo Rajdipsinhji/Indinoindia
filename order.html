@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>🍲 Indino Food Market</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #fff8e1, #e1f5fe);
+      margin: 0;
+      padding: 20px;
+      color: #004d40;
+    }
+    h2 {
+      text-align: center;
+      font-size: 2em;
+      color: #00796b;
+      margin-bottom: 20px;
+    }
+    .food-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 20px;
+    }
+    .food-card {
+      background: #ffffff;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      transition: transform 0.2s ease-in-out;
+    }
+    .food-card:hover {
+      transform: scale(1.02);
+    }
+    .food-card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+    }
+    .food-details {
+      padding: 15px;
+    }
+    .food-name {
+      font-size: 1.2em;
+      font-weight: bold;
+      margin: 5px 0;
+    }
+    .food-price {
+      color: #00796b;
+      font-size: 1em;
+    }
+    .order-btn {
+      background: #00796b;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 1em;
+      margin-top: 10px;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.3s;
+    }
+    .order-btn:hover {
+      background: #004d40;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 20px;
+      border: 2px solid #004d40;
+      width: 90%;
+      max-width: 400px;
+      border-radius: 15px;
+    }
+    .modal-content h3 {
+      margin-top: 0;
+      text-align: center;
+    }
+    .modal-content input,
+    .modal-content textarea {
+      width: 100%;
+      margin: 8px 0;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 1em;
+    }
+    #confirmOrderBtn {
+      background: #ff5722;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      width: 100%;
+      cursor: pointer;
+      font-size: 1em;
+    }
+    #confirmOrderBtn:hover {
+      background: #e64a19;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🍽️ ફૂડ માર્કેટ</h2>
+  <div class="food-grid" id="foodContainer"></div>
+
+  <!-- Modal -->
+  <div id="addressModal" class="modal">
+    <div class="modal-content">
+      <h3>🏠 તમારું એડ્રેસ</h3>
+      <input type="text" id="name" placeholder="નામ" required />
+      <input type="text" id="mobile" placeholder="મોબાઇલ નંબર" required />
+      <input type="text" id="village" placeholder="ગામનું નામ" required />
+      <textarea id="society" rows="2" placeholder="સોસાયટી / ફ્લેટ / રૂમ નંબર" required></textarea>
+      <button id="confirmOrderBtn">📦 ઓર્ડર નાંખો</button>
+    </div>
+  </div>
+
+  <script>
+    let selectedItem = null;
+
+    function loadFoodItems() {
+      const container = document.getElementById("foodContainer");
+      container.innerHTML = "";
+      const foodList = JSON.parse(localStorage.getItem('indino_food') || '[]');
+
+      if (foodList.length === 0) {
+        container.innerHTML = "<p>😞 હજુ સુધી કોઈ ફૂડ ઉપલબ્ધ નથી.</p>";
+        return;
+      }
+
+      foodList.forEach(food => {
+        const card = document.createElement("div");
+        card.className = "food-card";
+        card.innerHTML = `
+          <img src="${food.image}" alt="${food.name}" />
+          <div class="food-details">
+            <div class="food-name">${food.name}</div>
+            <div class="food-price">₹${food.price} / ${food.coins} Coins</div>
+            <button class="order-btn" onclick='openAddressModal(${JSON.stringify(food)})'>🛒 ઓર્ડર કરો</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function openAddressModal(food) {
+      selectedItem = food;
+      document.getElementById("addressModal").style.display = "block";
+    }
+
+    document.getElementById("confirmOrderBtn").addEventListener("click", () => {
+      const name = document.getElementById("name").value.trim();
+      const mobile = document.getElementById("mobile").value.trim();
+      const village = document.getElementById("village").value.trim();
+      const society = document.getElementById("society").value.trim();
+
+      if (!name || !mobile || !village || !society) {
+        alert("⛔ કૃપા કરીને બધાં ફીલ્ડ ભરો.");
+        return;
+      }
+
+      let coins = parseInt(localStorage.getItem("coins") || "0");
+      if (coins < selectedItem.coins) {
+        alert("😞 માફ કરો! તમારા ખાતામાં પૂરતાં Coins નથી.");
+        return;
+      }
+
+      coins -= selectedItem.coins;
+      localStorage.setItem("coins", coins.toString());
+
+      const orderList = JSON.parse(localStorage.getItem("indino_orders") || "[]");
+      orderList.push({
+        food: selectedItem.name,
+        name,
+        mobile,
+        village,
+        society
+      });
+      localStorage.setItem("indino_orders", JSON.stringify(orderList));
+
+      alert(`✅ ઓર્ડર સફળતાપૂર્વક નાંખાયો!\n🍔 ${selectedItem.name}`);
+
+      document.getElementById("addressModal").style.display = "none";
+      document.getElementById("name").value = "";
+      document.getElementById("mobile").value = "";
+      document.getElementById("village").value = "";
+      document.getElementById("society").value = "";
+    });
+
+    window.onclick = function(event) {
+      const modal = document.getElementById("addressModal");
+      if (event.target === modal) {
+        modal.style.display = "none";
+      }
+    }
+
+    loadFoodItems();
+  </script>
+</body>
+</html>

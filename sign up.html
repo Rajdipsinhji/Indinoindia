@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>📝 Indino Signup</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #f3e5f5, #e1f5fe);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .login-box {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+    h2 {
+      color: #4a148c;
+      margin-bottom: 20px;
+    }
+    input {
+      width: 90%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1em;
+    }
+    button {
+      background: #4a148c;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 1em;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: #6a1b9a;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-box">
+    <h2>📝-lndino સાઇન અપ</h2>
+    <input type="text" id="username" placeholder="યૂઝરનામ દાખલ કરો" />
+    <input type="password" id="password" placeholder="પાસવર્ડ દાખલ કરો" />
+    <br>
+    <button onclick="signup()">સાઇન અપ</button>
+    <br><br>
+    <a href="login.html">🔙 લૉગિન પર પાછા જાવ</a>
+  </div>
+
+  <script>
+    function signup() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      if (!username || !password) {
+        alert("⚠️ બંને ફીલ્ડ ભરવા જરૂરી છે.");
+        return;
+      }
+
+      const saved = JSON.parse(localStorage.getItem("users") || "{}");
+
+      if (saved[username]) {
+        alert("⚠️ આ યુઝરનામ પહેલેથી જ છે.");
+        return;
+      }
+
+      saved[username] = password;
+      localStorage.setItem("users", JSON.stringify(saved));
+      localStorage.setItem("coins_" + username, "0");
+
+      alert("🎉 Signup સફળ! હવે Login કરો.");
+      window.location.href = "login.html";
+    }
+  </script>
+</body>
+</html>

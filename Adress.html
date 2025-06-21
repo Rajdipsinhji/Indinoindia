@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Indino Address Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 400px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 16px;
+    }
+    button {
+      background: #00a859;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #007f45;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📦 Delivery Address</h2>
+    <form id="addressForm">
+      <input type="text" id="name" placeholder="Full Name" required />
+      <input type="tel" id="mobile" placeholder="Mobile Number" required />
+      <textarea id="address" placeholder="Full Address" required></textarea>
+      <input type="text" id="pincode" placeholder="Pincode" required />
+      <button type="submit">Save Address</button>
+    </form>
+    <p id="msg"></p>
+  </div>
+
+  <script>
+    document.getElementById("addressForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const data = {
+        name: document.getElementById("name").value,
+        mobile: document.getElementById("mobile").value,
+        address: document.getElementById("address").value,
+        pincode: document.getElementById("pincode").value
+      };
+
+      try {
+        const res = await fetch("http://localhost:5000/api/user/address", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        document.getElementById("msg").innerText = "✅ Address saved!";
+      } catch (err) {
+        document.getElementById("msg").innerText = "❌ Error saving address.";
+      }
+    });
+  </script>
+</body>
+</html>
